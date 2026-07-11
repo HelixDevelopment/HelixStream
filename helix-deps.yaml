@@ -1,0 +1,50 @@
+# helix-deps.yaml — HelixStream Submodule-Dependency Manifest
+#
+# Per Helix Constitution §11.4.31 (Submodule-Dependency-Manifest Mandate) /
+# §11.4.28 (own-org deps resolved from the parent project ROOT — never nested
+# own-org submodules). HelixStream is the reusable streaming-test module
+# (digital.vasic.helixstream); by design (DESIGN.md §4) it COMPOSES existing
+# HelixQA capabilities rather than reinventing them, so its own-org deps are:
+#   - HelixQA      : the orchestration engine + bridge + analyzers it drives
+#   - Containers   : rootless podman/compose orchestration (§11.4.161)
+#   - VisionEngine : CV/OCR pixel-oracle nav for non-introspectable UIs (§11.4.117)
+#
+# P1 NOTE (skeleton, §11.4.6): the P1 skeleton compiles STANDALONE with a
+# stdlib-only go.mod (no `require`/`replace` on these yet) — the glue packages
+# that actually import them (pkg/record → HelixQA bridge/analyzer; the vision
+# nav path → VisionEngine) land in later PWUs (P3/P6/P7), at which point the
+# go.mod `replace` block is added to match this manifest. This manifest declares
+# the INTENDED dependency graph now; it does not force the skeleton's go.mod.
+#
+# ssh_url + org per dep derive from the consuming project's .gitmodules
+# (authoritative): HelixQA / VisionEngine under HelixDevelopment; Containers
+# under vasic-digital.
+#
+# Layout: flat — each dep lands at <parent-project>/<dep-name>/ per §11.4.28(C).
+
+schema_version: 1
+
+deps:
+  - name: HelixQA
+    ssh_url: git@github.com:HelixDevelopment/HelixQA.git
+    ref: main
+    why: "Orchestration engine HelixStream drives — helixqa-bridge (§11.4.160 bridge foundation), recording-analyzer (§11.4.107), omniparser/uitars vision (§11.4.117), qa-audio-probe (§11.4.5), pkg/autonomous 4-phase session. Composition not reinvention (§11.4.28/§11.4.74)."
+    layout: flat
+  - name: Containers
+    ssh_url: git@github.com:vasic-digital/Containers.git
+    ref: main
+    why: "Rootless podman/compose orchestration (§11.4.161) for the emulator/host pipelines the streaming runner uses."
+    layout: flat
+  - name: VisionEngine
+    ssh_url: git@github.com:HelixDevelopment/VisionEngine.git
+    ref: master
+    why: "Vision/OCR analysis engine for the CV/OCR pixel-oracle navigation of non-introspectable TV-Compose UIs (§11.4.117) and subtitle/overlay OCR."
+    layout: flat
+
+transitive_handling:
+  recursive: true
+  conflict_resolution: operator-required
+
+# HelixStream is a Go module — the entire submodule is the Go subtree, so
+# language_specific_subtree is false.
+language_specific_subtree: false

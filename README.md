@@ -2,7 +2,7 @@
 
 **Universal, reusable audio/video streaming-app testing System for [HelixQA](https://github.com/HelixDevelopment/HelixQA).**
 
-> Status: **SCAFFOLD / design-approved, implementation pending.** This repository was created as the foundation for a multi-phase program. The authoritative design + phased PWU plan lives (for now) in the consuming project at `docs/research/helixqa_streaming_test_20260711/DESIGN.md` and will be migrated here in Phase 1. Nothing here is implemented yet — see the design doc for the honest EXISTS-vs-NEW inventory.
+> Status: **P1 landed — skeleton + wiring.** The reusable core interfaces (adapter contract, login state machine, catalog, playback, topology runner, geo-gate, smooth-AV acceptance, bridge/operator-interaction) are defined as Go types with deterministic stub implementations and green contract tests (`go build ./...` + `go test ./...` pass across 12 packages). **No real device driving is implemented** — the login/catalog/playback/smooth-AV/recording/bridge implementations are later PWUs. The authoritative design + 11-PWU plan lives (for now) in the consuming project at `docs/research/helixqa_streaming_test_20260711/DESIGN.md`; the honest per-PWU build state lives at [`docs/P1_STATUS.md`](docs/P1_STATUS.md). Nothing here validates a real streaming app yet — claiming otherwise would be the exact §11.4 PASS-bluff this System exists to prevent.
 
 ## What it is
 

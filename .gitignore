@@ -1,0 +1,33 @@
+# Build artefacts (§11.4.30 — never version generated/derived files)
+/bin/
+/build/
+/dist/
+/out/
+*.exe
+*.test
+*.out
+
+# Go
+vendor/
+go.work
+go.work.sum
+
+# Secrets (§11.4.10 — never commit credentials; .env.example is allowed)
+.env
+.env.*
+!.env.example
+scripts/testing/secrets/*
+!scripts/testing/secrets/*.example
+!scripts/testing/secrets/README.md
+
+# Captured evidence / QA corpora (§11.4.128 raw is gitignored; only curated committed)
+qa-results/
+/testdata/captured/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
