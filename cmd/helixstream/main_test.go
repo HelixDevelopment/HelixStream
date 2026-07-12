@@ -33,10 +33,10 @@ func TestRunNoArgs(t *testing.T) {
 	}
 }
 
-// A P1 stub subcommand must exit 0 AND explicitly announce it is not
-// implemented — never silently pretend to work (anti-bluff).
+// A stub subcommand must exit 0 AND explicitly announce it is not implemented —
+// never silently pretend to work (anti-bluff). `validate` is NO LONGER a stub.
 func TestRunStubSubcommandIsHonest(t *testing.T) {
-	for _, cmd := range []string{"run", "adapters", "validate", "record", "login"} {
+	for _, cmd := range []string{"run", "adapters", "record", "login"} {
 		var out, errb bytes.Buffer
 		if code := run([]string{cmd}, &out, &errb); code != 0 {
 			t.Fatalf("%s exit = %d, want 0", cmd, code)

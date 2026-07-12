@@ -1,0 +1,130 @@
+# SAMPLE CONSUMER BANK — ATMOSphere 6-RU-service streaming bank (DESIGN.md §10).
+#
+# This is CONSUMER-OWNED DATA, not engine code (§11.4.28). It demonstrates how a
+# consuming project (ATMOSphere) authors a version-tracked bank for ITS app
+# roster. The engine (pkg/testbank) parses + validates this generically; the
+# service ids / package ids / adapter refs below are ATMOSphere's data, injected
+# via the pkg/registry public API at runtime — never baked into the engine's
+# pkg/. This file lives under examples/ (a consumer/example path), NOT pkg/, so
+# the §11.4.28 decoupling audit (which scans cmd/ + pkg/) stays zero-literal.
+#
+# Seed of the §11.4.58 ATMOSphere Challenge-bank. The per-service ADAPTER DRIVERS
+# (login/catalog/playback) are later PWUs (P5-P9); this is bank DATA only.
+schema_version: "1.0"
+name: atmosphere_streaming_ru_services
+bank_version: "1.0"
+
+services:
+  - id: start
+    name: "START"
+    package: ru.start.androidtv
+    adapter: generic_androidtv
+    min_app_version: "0.0.0"
+    kind: video
+    topology: any
+    geo: { required_country: RU, native_first: true }   # KZ-native-first, VPN only if blocked (§8.2)
+    catalog: { probe_query: "популярное" }
+    playback:
+      highest_video: true
+      highest_audio: true
+      random_seeks: 3
+      transport: [pause, resume, stop]
+      select_audio_track: true
+      select_subtitle_track: true
+      smooth_av: { fps_tolerance: 0.10, max_dropped: 3, freeze_ssim: 0.99, max_jitter_ms: 8.0, min_rms_floor: 0.01, max_xrun_burst: 2 }
+    required_evidence: [geo-correct, liveness-frame-advance-n3, not-stale-cross-check, highest-track-confirmed, random-seek-landed, subtitle-real-dialogue, video-smooth, audio-hw-pcm-running, audio-rms-per-channel, audio-no-xrun-burst, evidence-dir-non-empty]
+
+  - id: ivi
+    name: "IVI"
+    package: ru.ivi.client
+    adapter: generic_androidtv
+    min_app_version: "0.0.0"
+    kind: video
+    topology: any
+    geo: { required_country: RU, native_first: true }
+    catalog: { probe_query: "фильмы" }
+    playback:
+      highest_video: true
+      highest_audio: true
+      random_seeks: 3
+      transport: [pause, resume, stop]
+      select_audio_track: true
+      select_subtitle_track: true
+      smooth_av: { fps_tolerance: 0.10, max_dropped: 3, freeze_ssim: 0.99, max_jitter_ms: 8.0, min_rms_floor: 0.01, max_xrun_burst: 2 }
+    required_evidence: [geo-correct, liveness-frame-advance-n3, highest-track-confirmed, random-seek-landed, subtitle-real-dialogue, video-smooth, audio-hw-pcm-running, audio-rms-per-channel, evidence-dir-non-empty]
+
+  - id: wink
+    name: "Wink"
+    package: ru.rt.video.app.tv
+    adapter: generic_androidtv
+    min_app_version: "0.0.0"
+    kind: video
+    topology: any
+    geo: { required_country: RU, native_first: true }
+    catalog: { probe_query: "сериалы" }
+    playback:
+      highest_video: true
+      highest_audio: true
+      random_seeks: 3
+      transport: [pause, resume, stop]
+      select_audio_track: true
+      select_subtitle_track: true
+      smooth_av: { fps_tolerance: 0.10, max_dropped: 3, freeze_ssim: 0.99, max_jitter_ms: 8.0, min_rms_floor: 0.01, max_xrun_burst: 2 }
+    required_evidence: [geo-correct, liveness-frame-advance-n3, highest-track-confirmed, random-seek-landed, subtitle-real-dialogue, video-smooth, audio-hw-pcm-running, audio-rms-per-channel, evidence-dir-non-empty]
+
+  - id: okko
+    name: "OKKO"
+    package: ru.more.play
+    adapter: generic_androidtv
+    min_app_version: "0.0.0"
+    kind: video
+    topology: any
+    geo: { required_country: RU, native_first: true }
+    catalog: { probe_query: "кино" }
+    playback:
+      highest_video: true
+      highest_audio: true
+      random_seeks: 3
+      transport: [pause, resume, stop]
+      select_audio_track: true
+      select_subtitle_track: true
+      smooth_av: { fps_tolerance: 0.10, max_dropped: 3, freeze_ssim: 0.99, max_jitter_ms: 8.0, min_rms_floor: 0.01, max_xrun_burst: 2 }
+    required_evidence: [geo-correct, liveness-frame-advance-n3, highest-track-confirmed, random-seek-landed, subtitle-real-dialogue, video-smooth, audio-hw-pcm-running, audio-rms-per-channel, evidence-dir-non-empty]
+
+  - id: vk-video
+    name: "VK Video"
+    package: com.vk.vkvideo
+    adapter: generic_androidtv
+    min_app_version: "0.0.0"
+    kind: video
+    topology: any
+    geo: { required_country: RU, native_first: true }
+    catalog: { probe_query: "видео" }
+    playback:
+      highest_video: true
+      highest_audio: true
+      random_seeks: 3
+      transport: [pause, resume, stop]
+      select_audio_track: true
+      select_subtitle_track: false
+      smooth_av: { fps_tolerance: 0.10, max_dropped: 3, freeze_ssim: 0.99, max_jitter_ms: 8.0, min_rms_floor: 0.01, max_xrun_burst: 2 }
+    required_evidence: [geo-correct, liveness-frame-advance-n3, highest-track-confirmed, random-seek-landed, video-smooth, audio-hw-pcm-running, audio-rms-per-channel, evidence-dir-non-empty]
+
+  - id: zvuk
+    name: "Zvuk"
+    package: ru.zvuk
+    adapter: generic_music
+    min_app_version: "0.0.0"
+    kind: music
+    topology: single_display_only
+    geo: { required_country: RU, native_first: true }
+    catalog: { probe_query: "плейлисты" }
+    playback:
+      highest_video: false
+      highest_audio: true
+      random_seeks: 2
+      transport: [pause, resume, stop]
+      select_audio_track: true
+      select_subtitle_track: false
+      smooth_av: { fps_tolerance: 0.0, max_dropped: 0, freeze_ssim: 0.0, max_jitter_ms: 0.0, min_rms_floor: 0.01, max_xrun_burst: 2 }
+    required_evidence: [geo-correct, audio-hw-pcm-running, audio-rms-per-channel, audio-no-xrun-burst, evidence-dir-non-empty]

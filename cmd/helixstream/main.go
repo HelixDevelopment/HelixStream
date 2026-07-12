@@ -1,37 +1,42 @@
 // Command helixstream is the HelixStream CLI (DESIGN.md §4).
 //
-// P1 NOTE (skeleton): only `version` is implemented. The `run | adapters |
-// validate | record | login` subcommands are declared and print an explicit
-// NOT-IMPLEMENTED marker so no one mistakes the skeleton for a working System.
-// Each is landed in a later PWU (P2/P5/P7/P8). Reporting them as working would
-// be the exact §11.4 PASS-bluff HelixStream exists to prevent.
+// P2 NOTE: `version` and `validate <bankfile>` are implemented. `validate`
+// loads + schema-validates a versioned test bank (pkg/testbank) — it validates
+// the BANK SCHEMA only, it does not run anything. The `run | adapters | record
+// | login` subcommands are declared and print an explicit NOT-IMPLEMENTED
+// marker so no one mistakes the skeleton for a working System; each is landed in
+// a later PWU (P5/P7/P8). Reporting them as working would be the exact §11.4
+// PASS-bluff HelixStream exists to prevent.
 package main
 
 import (
 	"fmt"
 	"io"
 	"os"
+
+	"digital.vasic.helixstream/pkg/testbank"
 )
 
-// Version is the HelixStream build version. P1 = the skeleton milestone.
-const Version = "0.1.0-p1"
+// Version is the HelixStream build version. P2 = schema + loader milestone.
+const Version = "0.2.0-p2"
 
-// notImplemented marks a declared-but-unimplemented P1 subcommand.
-const notImplemented = "NOT IMPLEMENTED (P1 skeleton — see docs/P1_STATUS.md)"
+// notImplemented marks a declared-but-unimplemented subcommand.
+const notImplemented = "NOT IMPLEMENTED (skeleton — see docs/P1_STATUS.md)"
 
-// subcommands declared by the CLI. `version` is implemented; the rest are P1 stubs.
+// subcommands declared by the CLI. `version` + `validate` are implemented; the
+// rest are stubs.
 var subcommands = []string{"run", "adapters", "validate", "record", "login", "version"}
 
 func usage(w io.Writer) {
-	fmt.Fprintf(w, "helixstream %s — universal streaming-app testing System (skeleton)\n", Version)
-	fmt.Fprintln(w, "usage: helixstream <command>")
+	fmt.Fprintf(w, "helixstream %s — universal streaming-app testing System\n", Version)
+	fmt.Fprintln(w, "usage: helixstream <command> [args]")
 	fmt.Fprintln(w, "commands:")
-	fmt.Fprintln(w, "  version    print the HelixStream version (implemented)")
-	fmt.Fprintln(w, "  run        run a streaming test bank            ("+notImplemented+")")
-	fmt.Fprintln(w, "  adapters   list/inspect registered adapters     ("+notImplemented+")")
-	fmt.Fprintln(w, "  validate   validate an adapter/bank spec         ("+notImplemented+")")
-	fmt.Fprintln(w, "  record     record connected displays             ("+notImplemented+")")
-	fmt.Fprintln(w, "  login      drive a service login state machine   ("+notImplemented+")")
+	fmt.Fprintln(w, "  version              print the HelixStream version (implemented)")
+	fmt.Fprintln(w, "  validate <bankfile>  load + schema-validate a versioned test bank (implemented)")
+	fmt.Fprintln(w, "  run                  run a streaming test bank            ("+notImplemented+")")
+	fmt.Fprintln(w, "  adapters             list/inspect registered adapters     ("+notImplemented+")")
+	fmt.Fprintln(w, "  record               record connected displays             ("+notImplemented+")")
+	fmt.Fprintln(w, "  login                drive a service login state machine   ("+notImplemented+")")
 }
 
 // run dispatches the CLI and returns the process exit code, writing to the
@@ -45,7 +50,9 @@ func run(args []string, stdout, stderr io.Writer) int {
 	case "version":
 		fmt.Fprintf(stdout, "helixstream %s\n", Version)
 		return 0
-	case "run", "adapters", "validate", "record", "login":
+	case "validate":
+		return runValidate(args[1:], stdout, stderr)
+	case "run", "adapters", "record", "login":
 		fmt.Fprintf(stderr, "helixstream %s: %s\n", args[0], notImplemented)
 		return 0
 	case "-h", "--help", "help":
@@ -56,6 +63,24 @@ func run(args []string, stdout, stderr io.Writer) int {
 		usage(stderr)
 		return 2
 	}
+}
+
+// runValidate loads + schema-validates a test bank file. Exit 0 = valid,
+// 1 = the bank was REJECTED (malformed / version-less / schema violation),
+// 2 = usage error. It validates the SCHEMA only — it does not run anything.
+func runValidate(args []string, stdout, stderr io.Writer) int {
+	if len(args) != 1 {
+		fmt.Fprintln(stderr, "usage: helixstream validate <bankfile>")
+		return 2
+	}
+	b, err := testbank.LoadFile(args[0])
+	if err != nil {
+		fmt.Fprintf(stderr, "INVALID: %s\n%v\n", args[0], err)
+		return 1
+	}
+	fmt.Fprintf(stdout, "OK: %s — schema %s, bank %s, %d service(s)\n",
+		b.Name, b.SchemaVersion, b.BankVersion, len(b.Services))
+	return 0
 }
 
 func main() {

@@ -1,0 +1,81 @@
+# Generic, project-agnostic streaming playback-manipulation bank (DESIGN.md §5).
+#
+# This ships WITH the engine as GENERIC data: it references only the baseline
+# fallback adapters (generic_androidtv / generic_music) and topology "any", so
+# it runs on any consumer's device set. It carries NO project literal — no real
+# service names or package ids (those live in a consumer bank; see
+# examples/atmosphere/streaming_ru_services.yaml).
+schema_version: "1.0"
+name: streaming_playback
+bank_version: "1.0"
+
+services:
+  - id: generic-video
+    name: "Generic video service (baseline)"
+    adapter: generic_androidtv
+    min_app_version: "0.0.0"
+    kind: video
+    topology: any
+    geo:
+      required_country: any
+      native_first: true
+    catalog:
+      probe_query: "popular"
+    playback:
+      highest_video: true
+      highest_audio: true
+      random_seeks: 3
+      transport: [pause, resume, stop]
+      select_audio_track: true
+      select_subtitle_track: true
+      smooth_av:
+        fps_tolerance: 0.10
+        max_dropped: 3
+        freeze_ssim: 0.99
+        max_jitter_ms: 8.0
+        min_rms_floor: 0.01
+        max_xrun_burst: 2
+    required_evidence:
+      - geo-correct
+      - liveness-frame-advance-n3
+      - not-stale-cross-check
+      - highest-track-confirmed
+      - random-seek-landed
+      - subtitle-real-dialogue
+      - video-smooth
+      - audio-hw-pcm-running
+      - audio-rms-per-channel
+      - audio-no-xrun-burst
+      - evidence-dir-non-empty
+
+  - id: generic-music
+    name: "Generic music service (baseline, audio-only)"
+    adapter: generic_music
+    min_app_version: "0.0.0"
+    kind: music
+    topology: single_display_only
+    geo:
+      required_country: any
+      native_first: true
+    catalog:
+      probe_query: "playlists"
+    playback:
+      highest_video: false
+      highest_audio: true
+      random_seeks: 2
+      transport: [pause, resume, stop]
+      select_audio_track: true
+      select_subtitle_track: false
+      smooth_av:
+        fps_tolerance: 0.0
+        max_dropped: 0
+        freeze_ssim: 0.0
+        max_jitter_ms: 0.0
+        min_rms_floor: 0.01
+        max_xrun_burst: 2
+    required_evidence:
+      - geo-correct
+      - audio-hw-pcm-running
+      - audio-rms-per-channel
+      - audio-no-xrun-burst
+      - evidence-dir-non-empty
